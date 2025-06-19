@@ -9,7 +9,9 @@ body { font-family: sans-serif; }
     margin-bottom: 10px;
 }
 #canvas { border: 1px solid #000; }
+
 #status {
     margin-top: 10px;
     height: 1.2em;
 }
+

@@ -5,7 +5,9 @@ const ctx = canvas.getContext('2d');
 const downloadBtn = document.getElementById('downloadBtn');
 const autoBtn = document.getElementById('autoBtn');
 const applyBtn = document.getElementById('applyBtn');
+
 const status = document.getElementById('status');
+
 
 // 画像オブジェクト
 let image = new Image();
@@ -47,6 +49,7 @@ function getHandle(x, y, m) {
     return null;
 }
 
+
 function loadImage(file) {
     const reader = new FileReader();
     reader.onload = function (e) {
@@ -55,10 +58,12 @@ function loadImage(file) {
             canvas.height = image.height;
             redraw();
             status.textContent = '画像を読み込みました';
+
         };
         image.src = e.target.result;
     };
     reader.readAsDataURL(file);
+
 }
 
 function redraw() {
@@ -66,6 +71,7 @@ function redraw() {
     if (image.src) {
         ctx.drawImage(image, 0, 0);
     }
+
     masks.forEach((m, i) => {
         ctx.fillStyle = 'black';
         ctx.fillRect(m.x, m.y, m.w, m.h);
@@ -85,6 +91,7 @@ function redraw() {
                 ctx.strokeRect(h.x - HANDLE_SIZE, h.y - HANDLE_SIZE, HANDLE_SIZE * 2, HANDLE_SIZE * 2);
             });
         }
+
     });
     if (suggestions.length) {
         ctx.strokeStyle = 'blue';
@@ -94,6 +101,7 @@ function redraw() {
         });
         ctx.setLineDash([]);
     }
+
 }
 
 dropZone.addEventListener('dragover', e => {
@@ -114,6 +122,7 @@ fileInput.addEventListener('change', e => {
 
 canvas.addEventListener('mousedown', e => {
     if (!image.src) return;
+
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -217,12 +226,15 @@ downloadBtn.addEventListener('click', () => {
     link.click();
 });
 
+
 autoBtn.addEventListener('click', autoDetect);
 applyBtn.addEventListener('click', applySuggestions);
 
 async function autoDetect() {
     if (!image.src) return;
+
     status.textContent = '候補生成中...';
+
     suggestions = [];
     await tf.ready();
     const tensor = tf.tidy(() => {
@@ -272,7 +284,9 @@ async function autoDetect() {
     }
     tensor.dispose();
     redraw();
+
     status.textContent = `候補生成完了 (${suggestions.length}件)`;
+
 }
 
 function applySuggestions() {
@@ -283,3 +297,4 @@ function applySuggestions() {
         status.textContent = '候補を適用しました';
     }
 }
+
