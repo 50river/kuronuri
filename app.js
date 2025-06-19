@@ -63,7 +63,13 @@ function loadImage(file) {
         image.src = e.target.result;
     };
     reader.readAsDataURL(file);
-
+        ctx.fillStyle = 'rgba(0,0,255,0.2)';
+        ctx.font = '16px sans-serif';
+        suggestions.forEach((s, i) => {
+            ctx.fillRect(s.x, s.y, s.w, s.h);
+            ctx.fillStyle = 'blue';
+            ctx.fillText(i + 1, s.x + 4, s.y + 16);
+            ctx.fillStyle = 'rgba(0,0,255,0.2)';
 }
 
 function redraw() {
