@@ -5,10 +5,12 @@ const ctx = canvas.getContext('2d');
 const downloadBtn = document.getElementById('downloadBtn');
 const autoBtn = document.getElementById('autoBtn');
 const applyBtn = document.getElementById('applyBtn');
+const status = document.getElementById('status');
 
 // 自動検出された候補領域
 let suggestions = [];
 
+            status.textContent = '画像を読み込みました';
 // 画像オブジェクト
 let image = new Image();
 // 現在の操作モード: draw/move/resize/null
@@ -197,6 +199,7 @@ applyBtn.addEventListener('click', applySuggestions);
 
 async function autoDetect() {
     if (!image.src) return;
+    status.textContent = '候補生成中...';
     suggestions = [];
     await tf.ready();
     const tensor = tf.tidy(() => {
@@ -246,6 +249,7 @@ async function autoDetect() {
     }
     tensor.dispose();
     redraw();
+    status.textContent = `候補生成完了 (${suggestions.length}件)`;
 }
 
 function applySuggestions() {
@@ -253,6 +257,7 @@ function applySuggestions() {
         masks.push(...suggestions);
         suggestions = [];
         redraw();
+        status.textContent = '候補を適用しました';
     }
 }
 canvas.addEventListener('mouseup', e => {
