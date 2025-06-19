@@ -4,6 +4,7 @@ const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const downloadBtn = document.getElementById('downloadBtn');
 
+
 // 画像オブジェクト
 let image = new Image();
 // 現在の操作モード: draw/move/resize/null
@@ -42,6 +43,7 @@ function getHandle(x, y, m) {
     return null;
 }
 
+
 function loadImage(file) {
     const reader = new FileReader();
     reader.onload = function (e) {
@@ -60,6 +62,7 @@ function redraw() {
     if (image.src) {
         ctx.drawImage(image, 0, 0);
     }
+
     masks.forEach((m, i) => {
         ctx.fillStyle = 'black';
         ctx.fillRect(m.x, m.y, m.w, m.h);
@@ -79,6 +82,7 @@ function redraw() {
                 ctx.strokeRect(h.x - HANDLE_SIZE, h.y - HANDLE_SIZE, HANDLE_SIZE * 2, HANDLE_SIZE * 2);
             });
         }
+
     });
 }
 
@@ -100,6 +104,7 @@ fileInput.addEventListener('change', e => {
 
 canvas.addEventListener('mousedown', e => {
     if (!image.src) return;
+
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -195,6 +200,7 @@ window.addEventListener('keydown', e => {
         redraw();
     }
 });
+
 
 downloadBtn.addEventListener('click', () => {
     const link = document.createElement('a');
