@@ -6,8 +6,8 @@ const downloadBtn = document.getElementById('downloadBtn');
 const autoBtn = document.getElementById('autoBtn');
 const applyBtn = document.getElementById('applyBtn');
 
-// 自動検出された候補領域
-let suggestions = [];
+const status = document.getElementById('status');
+
 
 // 画像オブジェクト
 let image = new Image();
@@ -21,6 +21,8 @@ let selectedMask = -1;
 let resizeHandle = null;
 // すべてのマスク領域
 let masks = [];
+// 自動検出された候補領域
+let suggestions = [];
 
 const HANDLE_SIZE = 6;
 
@@ -55,18 +57,19 @@ function loadImage(file) {
             canvas.width = image.width;
             canvas.height = image.height;
             redraw();
+            status.textContent = '画像を読み込みました';
+
         };
         image.src = e.target.result;
     };
     reader.readAsDataURL(file);
-    if (suggestions.length) {
-        ctx.strokeStyle = 'blue';
-        ctx.setLineDash([4, 4]);
-        suggestions.forEach(s => {
-            ctx.strokeRect(s.x, s.y, s.w, s.h);
-        });
-        ctx.setLineDash([]);
-    }
+        ctx.fillStyle = 'rgba(0,0,255,0.2)';
+        ctx.font = '16px sans-serif';
+        suggestions.forEach((s, i) => {
+            ctx.fillRect(s.x, s.y, s.w, s.h);
+            ctx.fillStyle = 'blue';
+            ctx.fillText(i + 1, s.x + 4, s.y + 16);
+            ctx.fillStyle = 'rgba(0,0,255,0.2)';
 }
 
 function redraw() {
@@ -96,6 +99,15 @@ function redraw() {
         }
 
     });
+    if (suggestions.length) {
+        ctx.strokeStyle = 'blue';
+        ctx.setLineDash([4, 4]);
+        suggestions.forEach(s => {
+            ctx.strokeRect(s.x, s.y, s.w, s.h);
+        });
+        ctx.setLineDash([]);
+    }
+
 }
 
 dropZone.addEventListener('dragover', e => {
@@ -191,12 +203,44 @@ canvas.addEventListener('mousemove', e => {
     }
 });
 
+canvas.addEventListener('mouseup', e => {
+    if (!mode) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    if (mode === 'draw') {
+        const w = x - startX;
+        const h = y - startY;
+        masks.push({ x: startX, y: startY, w, h });
+    }
+    mode = null;
+    redraw();
+});
+
+window.addEventListener('keydown', e => {
+    if (e.key === 'Delete' && selectedMask >= 0) {
+        masks.splice(selectedMask, 1);
+        selectedMask = -1;
+        redraw();
+    }
+});
+
+downloadBtn.addEventListener('click', () => {
+    const link = document.createElement('a');
+    link.href = canvas.toDataURL('image/png');
+    link.download = 'masked.png';
+    link.click();
+});
+
 
 autoBtn.addEventListener('click', autoDetect);
 applyBtn.addEventListener('click', applySuggestions);
 
 async function autoDetect() {
     if (!image.src) return;
+
+    status.textContent = '候補生成中...';
+
     suggestions = [];
     await tf.ready();
     const tensor = tf.tidy(() => {
@@ -246,6 +290,9 @@ async function autoDetect() {
     }
     tensor.dispose();
     redraw();
+
+    status.textContent = `候補生成完了 (${suggestions.length}件)`;
+
 }
 
 function applySuggestions() {
@@ -253,34 +300,7 @@ function applySuggestions() {
         masks.push(...suggestions);
         suggestions = [];
         redraw();
+        status.textContent = '候補を適用しました';
     }
 }
-canvas.addEventListener('mouseup', e => {
-    if (!mode) return;
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    if (mode === 'draw') {
-        const w = x - startX;
-        const h = y - startY;
-        masks.push({ x: startX, y: startY, w, h });
-    }
-    mode = null;
-    redraw();
-});
 
-window.addEventListener('keydown', e => {
-    if (e.key === 'Delete' && selectedMask >= 0) {
-        masks.splice(selectedMask, 1);
-        selectedMask = -1;
-        redraw();
-    }
-});
-
-
-downloadBtn.addEventListener('click', () => {
-    const link = document.createElement('a');
-    link.href = canvas.toDataURL('image/png');
-    link.download = 'masked.png';
-    link.click();
-});
